@@ -6,6 +6,7 @@ const clerkPubKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || "pk_test_b2
 
 export const metadata = {
   title: 'QuickAI',
+  icon: '/favicon.svg'
 }
 
 export default function RootLayout({ children }) {
