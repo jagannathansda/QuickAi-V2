@@ -5,7 +5,7 @@ import { ClerkProvider } from '@clerk/nextjs'
 const clerkPubKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || "pk_test_b25lLWFuY2hvdnktNzUuY2xlcmsuYWNjb3VudHMuZGV2JA"
 
 export const metadata = {
-  title: 'QuickAI', 
+  title: 'Quick-AI-V2', 
   description: 'Powerful AI Tools',
   icons: {
     icon: '/assets/favicon.svg', 
