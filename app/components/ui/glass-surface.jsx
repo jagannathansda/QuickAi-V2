@@ -38,7 +38,7 @@ export const GlassSurface = ({
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    setIsMobile(window.innerWidth <= 768);
+    setIsMobile(window.innerWidth <= 1024);
   }, []);
 
   const generateDisplacementMap = () => {
@@ -134,7 +134,7 @@ export const GlassSurface = ({
              backdrop-filter: blur(${blur}px) saturate(${saturation});
             -webkit-backdrop-filter: blur(${blur}px) saturate(${saturation});
         }
-        @media (min-width: 769px) {
+        @media (min-width: 1025px) {
             .glass-surface-wrapper {
                  backdrop-filter: url(#${filterId}) saturate(${saturation}) !important;
                 -webkit-backdrop-filter: url(#${filterId}) saturate(${saturation}) !important;

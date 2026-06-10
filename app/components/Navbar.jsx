@@ -70,7 +70,7 @@ const Navbar = () => {
             }
             .nav-link:hover { color: #ffffff; }
             
-            @media (max-width: 768px) {
+            @media (max-width: 1024px) {
                 .desktop-nav { display: none !important; }
                 .mobile-nav { display: flex !important; }
             }

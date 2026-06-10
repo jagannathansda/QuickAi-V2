@@ -50,7 +50,7 @@ const Features = React.memo(() => {
         .bento-large .feature-desc { font-size: 14px; -webkit-line-clamp: 4; }
         .bento-wide .feature-desc, .bento-tall .feature-desc, .bento-square .feature-desc { font-size: 12px; -webkit-line-clamp: 2; }
 
-        @media (max-width: 1024px) {
+        @media (max-width: 768px) {
           .bento-grid { grid-template-columns: 1fr; grid-template-rows: auto; max-width: 500px; }
           .bento-large, .bento-wide, .bento-tall, .bento-square { grid-column: span 1; grid-row: span 1; min-height: 160px; }
         }
