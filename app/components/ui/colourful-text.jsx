@@ -16,14 +16,13 @@ export function ColourfulText({ text }) {
     "rgb(249, 129, 47)",
   ], []);
 
+  const chars = useMemo(() => text.split(""), [text]);
   const [currentColors, setCurrentColors] = useState(colors);
-  const [count, setCount] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
       const shuffled = [...colors].sort(() => Math.random() - 0.5);
       setCurrentColors(shuffled);
-      setCount((prev) => prev + 1);
     }, 5000);
 
     return () => clearInterval(interval);
@@ -31,9 +30,9 @@ export function ColourfulText({ text }) {
 
   return (
     <span style={{ display: "inline-block" }}>
-      {text.split("").map((char, index) => (
+      {chars.map((char, index) => (
         <motion.span
-          key={`${char}-${count}-${index}`}
+          key={index}
           initial={{ y: 0 }}
           animate={{
             color: currentColors[index % currentColors.length],
@@ -46,7 +45,13 @@ export function ColourfulText({ text }) {
             duration: 0.5,
             delay: index * 0.05,
           }}
-          style={{ display: "inline-block", whiteSpace: "pre", letterSpacing: "-0.02em" }}
+          style={{
+            display: "inline-block",
+            whiteSpace: "pre",
+            letterSpacing: "-0.02em",
+            transform: "translateZ(0)",
+            willChange: "transform, color, filter, opacity"
+          }}
         >
           {char}
         </motion.span>

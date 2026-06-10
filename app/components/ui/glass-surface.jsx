@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState, useId } from 'react';
+import React, { useEffect, useRef, useId } from 'react';
 
 export const GlassSurface = ({
   children,
@@ -11,9 +11,9 @@ export const GlassSurface = ({
   opacity = 0.93,
   blur = 11,
   displace = 0,
-  backgroundOpacity = 0.02, // Ekdum halka frost
+  backgroundOpacity = 0.02,
   saturation = 1.2,
-  distortionScale = -180, // Liquid edges
+  distortionScale = -180,
   redOffset = 0,
   greenOffset = 10,
   blueOffset = 20,
@@ -36,12 +36,12 @@ export const GlassSurface = ({
   const gaussianBlurRef = useRef(null);
 
   const generateDisplacementMap = () => {
-    const rect = containerRef.current?.getBoundingClientRect();
-    const actualWidth = rect?.width || 800;
-    const actualHeight = rect?.height || 64;
+    if (!containerRef.current) return '';
+    const rect = containerRef.current.getBoundingClientRect();
+    const actualWidth = rect.width || 800;
+    const actualHeight = rect.height || 64;
     const edgeSize = Math.min(actualWidth, actualHeight) * (borderWidth * 0.5);
 
-    // FIXED: Added exact width and height to SVG root to prevent 0x0 parsing in Chrome
     const svgContent = `
       <svg width="${actualWidth}" height="${actualHeight}" viewBox="0 0 ${actualWidth} ${actualHeight}" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -67,7 +67,6 @@ export const GlassSurface = ({
     if (feImageRef.current) {
       const dataUrl = generateDisplacementMap();
       feImageRef.current.setAttribute('href', dataUrl);
-      feImageRef.current.setAttributeNS('http://www.w3.org/1999/xlink', 'href', dataUrl);
     }
   };
 
@@ -91,17 +90,22 @@ export const GlassSurface = ({
 
   useEffect(() => {
     if (!containerRef.current) return;
-    const resizeObserver = new ResizeObserver(() => { updateDisplacementMap(); });
+    let rafId;
+    const resizeObserver = new ResizeObserver(() => { 
+        cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(updateDisplacementMap);
+    });
     resizeObserver.observe(containerRef.current);
-    return () => { resizeObserver.disconnect(); };
+    return () => { 
+        resizeObserver.disconnect();
+        cancelAnimationFrame(rafId);
+    };
   }, []);
-
-  useEffect(() => { updateDisplacementMap(); }, [width, height]);
 
   return (
     <div
       ref={containerRef}
-      className={className}
+      className={`glass-surface-wrapper ${className}`}
       style={{
         ...style,
         width: typeof width === 'number' ? `${width}px` : width,
@@ -109,17 +113,27 @@ export const GlassSurface = ({
         borderRadius: `${borderRadius}px`,
         background: `rgba(255, 255, 255, ${backgroundOpacity})`,
         border: '1px solid rgba(255, 255, 255, 0.1)',
-        
-        // This makes the magic happen!
-        backdropFilter: `url(#${filterId}) saturate(${saturation})`,
-        WebkitBackdropFilter: `url(#${filterId}) saturate(${saturation})`,
-        
         position: 'relative',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        transform: 'translateZ(0)',
+        willChange: 'transform'
       }}
     >
+      <style>{`
+        .glass-surface-wrapper {
+             backdrop-filter: blur(${blur}px) saturate(${saturation});
+            -webkit-backdrop-filter: blur(${blur}px) saturate(${saturation});
+        }
+        @media (min-width: 769px) {
+            .glass-surface-wrapper {
+                 backdrop-filter: url(#${filterId}) saturate(${saturation}) !important;
+                -webkit-backdrop-filter: url(#${filterId}) saturate(${saturation}) !important;
+            }
+        }
+      `}</style>
+
       <svg 
         style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, pointerEvents: 'none', zIndex: -10 }} 
         xmlns="http://www.w3.org/2000/svg"

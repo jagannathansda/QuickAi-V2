@@ -1,15 +1,22 @@
 "use client";
-import React from "react";
+import React, { useMemo } from "react";
 import { motion } from "framer-motion";
 
 export default function WaveReveal({ text, direction = "up", delay = 0 }) {
-  const words = text.trim().split(/\s/);
+  const parsedWords = useMemo(() => {
+    return text.trim().split(/\s/).map((word, wordIdx) => {
+      return {
+        letters: word.split(""),
+        wordIdx
+      };
+    });
+  }, [text]);
 
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '12px', fontSize: 'clamp(2rem, 4vw, 3.2rem)', fontWeight: '800', fontFamily: '"Inter", "Poppins", system-ui, sans-serif', letterSpacing: '-0.03em', color: 'white', marginBottom: '10px' }}>
-      {words.map((word, wordIdx) => (
+      {parsedWords.map(({ letters, wordIdx }) => (
         <span key={`word-${wordIdx}`} style={{ display: 'inline-flex', overflow: 'hidden' }}>
-          {word.split("").map((letter, letterIdx) => {
+          {letters.map((letter, letterIdx) => {
             const letterDelay = delay + (wordIdx * 0.04) + (letterIdx * 0.01);
             return (
               <motion.span
@@ -24,7 +31,11 @@ export default function WaveReveal({ text, direction = "up", delay = 0 }) {
                   repeatDelay: 3,
                   ease: "easeOut"
                 }}
-                style={{ display: 'inline-block' }}
+                style={{ 
+                  display: 'inline-block',
+                  transform: "translateZ(0)",
+                  willChange: "transform, opacity, filter"
+                }}
               >
                 {letter}
               </motion.span>

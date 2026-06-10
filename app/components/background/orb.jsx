@@ -12,7 +12,7 @@ function hexToVec3(color) {
 export default function Orb() {
   const ctnDom = useRef(null);
 
-  const vert = /* glsl */ `
+  const vert = `
     precision highp float;
     attribute vec2 position;
     attribute vec2 uv;
@@ -23,22 +23,33 @@ export default function Orb() {
     }
   `;
 
-  const frag = /* glsl */ `
+  const frag = `
     precision highp float;
     uniform float iTime;
     uniform vec3 iResolution;
-    uniform float hue;
-    uniform float hover;
-    uniform float rot;
-    uniform float hoverIntensity;
     uniform vec3 backgroundColor;
     varying vec2 vUv;
 
-    vec3 rgb2yiq(vec3 c) { return vec3(dot(c, vec3(0.299, 0.587, 0.114)), dot(c, vec3(0.596, -0.274, -0.322)), dot(c, vec3(0.211, -0.523, 0.312))); }
-    vec3 yiq2rgb(vec3 c) { return vec3(c.x + 0.956 * c.y + 0.621 * c.z, c.x - 0.272 * c.y - 0.647 * c.z, c.x - 1.106 * c.y + 1.703 * c.z); }
-    vec3 adjustHue(vec3 color, float hueDeg) { float hr = hueDeg * 0.0174533; vec3 yiq = rgb2yiq(color); float i = yiq.y * cos(hr) - yiq.z * sin(hr); float q = yiq.y * sin(hr) + yiq.z * cos(hr); yiq.y = i; yiq.z = q; return yiq2rgb(yiq); }
-    vec3 hash33(vec3 p3) { p3 = fract(p3 * vec3(0.1031, 0.11369, 0.13787)); p3 += dot(p3, p3.yxz + 19.19); return -1.0 + 2.0 * fract(vec3(p3.x + p3.y, p3.x + p3.z, p3.y + p3.z) * p3.zyx); }
-    float snoise3(vec3 p) { const float K1 = 0.333333333, K2 = 0.166666667; vec3 i = floor(p + (p.x + p.y + p.z) * K1); vec3 d0 = p - (i - (i.x + i.y + i.z) * K2); vec3 e = step(vec3(0.0), d0 - d0.yzx); vec3 i1 = e * (1.0 - e.zxy); vec3 i2 = 1.0 - e.zxy * (1.0 - e); vec3 d1 = d0 - (i1 - K2); vec3 d2 = d0 - (i2 - K1); vec3 d3 = d0 - 0.5; vec4 h = max(0.6 - vec4(dot(d0, d0), dot(d1, d1), dot(d2, d2), dot(d3, d3)), 0.0); vec4 n = h * h * h * h * vec4(dot(d0, hash33(i)), dot(d1, hash33(i + i1)), dot(d2, hash33(i + i2)), dot(d3, hash33(i + 1.0))); return dot(vec4(31.316), n); }
+    vec3 hash33(vec3 p3) { 
+        p3 = fract(p3 * vec3(0.1031, 0.11369, 0.13787)); 
+        p3 += dot(p3, p3.yxz + 19.19); 
+        return -1.0 + 2.0 * fract(vec3(p3.x + p3.y, p3.x + p3.z, p3.y + p3.z) * p3.zyx); 
+    }
+
+    float snoise3(vec3 p) { 
+        const float K1 = 0.333333333, K2 = 0.166666667; 
+        vec3 i = floor(p + (p.x + p.y + p.z) * K1); 
+        vec3 d0 = p - (i - (i.x + i.y + i.z) * K2); 
+        vec3 e = step(vec3(0.0), d0 - d0.yzx); 
+        vec3 i1 = e * (1.0 - e.zxy); 
+        vec3 i2 = 1.0 - e.zxy * (1.0 - e); 
+        vec3 d1 = d0 - (i1 - K2); 
+        vec3 d2 = d0 - (i2 - K1); 
+        vec3 d3 = d0 - 0.5; 
+        vec4 h = max(0.6 - vec4(dot(d0, d0), dot(d1, d1), dot(d2, d2), dot(d3, d3)), 0.0); 
+        vec4 n = h * h * h * h * vec4(dot(d0, hash33(i)), dot(d1, hash33(i + i1)), dot(d2, hash33(i + i2)), dot(d3, hash33(i + 1.0))); 
+        return dot(vec4(31.316), n); 
+    }
 
     const vec3 baseColor1 = vec3(0.611, 0.262, 0.996); 
     const vec3 baseColor2 = vec3(0.298, 0.760, 0.913); 
@@ -48,10 +59,6 @@ export default function Orb() {
     float light2(float i, float a, float d) { return i / (1.0 + d * d * a); }
 
     vec4 draw(vec2 uv) {
-      vec3 color1 = adjustHue(baseColor1, hue);
-      vec3 color2 = adjustHue(baseColor2, hue);
-      vec3 color3 = adjustHue(baseColor3, hue);
-      
       float ang = atan(uv.y, uv.x);
       float len = length(uv);
       float invLen = len > 0.0 ? 1.0 / len : 0.0;
@@ -69,8 +76,8 @@ export default function Orb() {
       float v2 = smoothstep(1.0, mix(0.6, 1.0, n0 * 0.5), len);
       float v3 = smoothstep(0.6, mix(0.6, 1.0, 0.5), len);
       
-      vec3 colBase = mix(color1, color2, cl);
-      vec3 darkCol = clamp((mix(color3, colBase, v0) + v1) * v2 * v3, 0.0, 1.0);
+      vec3 colBase = mix(baseColor1, baseColor2, cl);
+      vec3 darkCol = clamp((mix(baseColor3, colBase, v0) + v1) * v2 * v3, 0.0, 1.0);
       vec3 lightCol = clamp(mix(backgroundColor, (colBase + v1) * mix(1.0, v2 * v3, mix(1.0, 0.1, bgLuminance)), v0), 0.0, 1.0);
       vec3 finalCol = mix(darkCol, lightCol, bgLuminance);
       
@@ -81,15 +88,6 @@ export default function Orb() {
       vec2 center = iResolution.xy * 0.5;
       float size = min(iResolution.x, iResolution.y);
       vec2 uv = (fragCoord - center) / size * 2.0;
-      
-      float angle = rot;
-      float s = sin(angle);
-      float c = cos(angle);
-      uv = vec2(c * uv.x - s * uv.y, s * uv.x + c * uv.y);
-      
-      uv.x += hover * hoverIntensity * 0.1 * sin(uv.y * 10.0 + iTime);
-      uv.y += hover * hoverIntensity * 0.1 * sin(uv.x * 10.0 + iTime);
-      
       return draw(uv);
     }
 
@@ -113,10 +111,6 @@ export default function Orb() {
       uniforms: {
         iTime: { value: 0 },
         iResolution: { value: new Vec3(gl.canvas.width, gl.canvas.height, gl.canvas.width / gl.canvas.height) },
-        hue: { value: 0 },
-        hover: { value: 0 },
-        rot: { value: 0 },
-        hoverIntensity: { value: 0.2 },
         backgroundColor: { value: hexToVec3('#000000') }
       }
     });
@@ -130,7 +124,8 @@ export default function Orb() {
 
     function resize() {
       if (!container) return;
-      const dpr = window.devicePixelRatio || 1;
+      const isMobile = window.innerWidth <= 768;
+      const dpr = isMobile ? 1 : Math.min(window.devicePixelRatio || 1, 2);
       const width = container.clientWidth;
       const height = container.clientHeight;
       renderer.setSize(width * dpr, height * dpr);
@@ -141,47 +136,10 @@ export default function Orb() {
     window.addEventListener('resize', resize);
     resize();
 
-    let targetHover = 0;
-    let lastTime = 0;
-    let currentRot = 0;
-
-    // GLOBAL MOUSE TRACKING FOR HOVER FIX
-    const handleMouseMove = e => {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      const size = Math.min(width, height);
-      const centerX = width / 2;
-      const centerY = height / 2;
-      
-      const uvX = ((e.clientX - centerX) / size) * 2.0;
-      const uvY = ((e.clientY - centerY) / size) * 2.0;
-
-      if (Math.sqrt(uvX * uvX + uvY * uvY) < 0.8) {
-        targetHover = 1;
-      } else {
-        targetHover = 0;
-      }
-    };
-
-    const handleMouseLeave = () => { targetHover = 0; };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseleave', handleMouseLeave);
-
     let rafId;
     const update = t => {
       rafId = requestAnimationFrame(update);
-      const dt = (t - lastTime) * 0.001;
-      lastTime = t;
       program.uniforms.iTime.value = t * 0.001;
-      
-      program.uniforms.hover.value += (targetHover - program.uniforms.hover.value) * 0.1;
-
-      if (targetHover > 0.5) {
-        currentRot += dt * 0.3; // rotationSpeed
-      }
-      program.uniforms.rot.value = currentRot;
-
       renderer.render({ scene: mesh });
     };
     rafId = requestAnimationFrame(update);
@@ -189,8 +147,6 @@ export default function Orb() {
     return () => {
       cancelAnimationFrame(rafId);
       window.removeEventListener('resize', resize);
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseleave', handleMouseLeave);
       if (container.contains(gl.canvas)) container.removeChild(gl.canvas);
       if (gl) gl.deleteProgram(program.program);
     };

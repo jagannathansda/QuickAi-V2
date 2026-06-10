@@ -39,7 +39,7 @@ export default function Home() {
         pointerEvents: 'none',
         overflow: 'hidden'
       }}>
-        <Orb hoverIntensity={0.2} rotateOnHover={true} />
+        <Orb />
       </div>
 
       {/* FOREGROUND CONTENT */}

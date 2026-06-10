@@ -10,7 +10,7 @@ export const TextFlip = ({ prefix, words, suffix }) => {
       setIndex((prev) => (prev + 1) % words.length);
     }, 2800);
     return () => clearInterval(interval);
-  }, [words]);
+  }, [words.length]);
 
   return (
     <motion.div 
@@ -19,7 +19,7 @@ export const TextFlip = ({ prefix, words, suffix }) => {
         display: 'flex', 
         flexWrap: 'wrap', 
         alignItems: 'center', 
-        justifyContent: 'center', 
+        justify: 'center', 
         gap: '12px' 
       }}
     >
@@ -42,7 +42,13 @@ export const TextFlip = ({ prefix, words, suffix }) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -25 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
-            style={{ color: '#A855F7', whiteSpace: 'nowrap', display: 'inline-block' }} 
+            style={{ 
+              color: '#A855F7', 
+              whiteSpace: 'nowrap', 
+              display: 'inline-block',
+              transform: "translateZ(0)",
+              willChange: "transform, opacity"
+            }} 
           >
             {words[index]}
           </motion.span>

@@ -1,24 +1,26 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect, useMemo } from "react";
 
 export const TypewriterEffectSmooth = ({ words }) => {
   const [visibleCount, setVisibleCount] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const characters = [];
-  words.forEach((word, wordIdx) => {
-    const chars = word.text.split("");
-    chars.forEach((char) => {
-      characters.push({ char, color: word.color || "#ffffff", isNewline: false });
+  const characters = useMemo(() => {
+    const charsArray = [];
+    words.forEach((word, wordIdx) => {
+      const chars = word.text.split("");
+      chars.forEach((char) => {
+        charsArray.push({ char, color: word.color || "#ffffff", isNewline: false });
+      });
+      
+      if (word.newline) {
+        charsArray.push({ isNewline: true });
+      } else if (wordIdx !== words.length - 1) {
+        charsArray.push({ char: " ", color: "#ffffff", isNewline: false });
+      }
     });
-    
-    if (word.newline) {
-      characters.push({ isNewline: true });
-    } else if (wordIdx !== words.length - 1) {
-      characters.push({ char: " ", color: "#ffffff", isNewline: false });
-    }
-  });
+    return charsArray;
+  }, [words]);
 
   useEffect(() => {
     let timeout;
@@ -46,6 +48,15 @@ export const TypewriterEffectSmooth = ({ words }) => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '16px 0', minHeight: '140px' }}>
+      <style>{`
+        @keyframes blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0; }
+        }
+        .cursor-blink {
+          animation: blink 0.8s infinite;
+        }
+      `}</style>
       <div style={{
         fontSize: 'clamp(32px, 5vw, 54px)',
         fontWeight: '800',
@@ -63,10 +74,8 @@ export const TypewriterEffectSmooth = ({ words }) => {
             </span>
           );
         })}
-        <motion.span
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, repeat: Infinity, repeatType: "reverse" }}
+        <span
+          className="cursor-blink"
           style={{
             display: 'inline-block',
             width: '3px',

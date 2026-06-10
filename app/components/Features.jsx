@@ -15,14 +15,40 @@ const featuresData = [
   { icon: <FileText color="white" />, color: "#0ea5e9", spotlight: "rgba(14, 165, 233, 0.15)", title: "Resume Reviewer", desc: "Get your resume reviewed by AI to improve your chances of landing your dream job.", bentoClass: "bento-wide", link: "/resume-reviewer" }
 ];
 
-const Features = () => {
+const motionInitial = { opacity: 0, y: 20 };
+const motionWhileInView = { opacity: 1, y: 0 };
+const motionViewport = { once: true };
+const motionTransition = { duration: 0.6, ease: "easeOut" };
+
+const Features = React.memo(() => {
   return (
     <div id="features" style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '100px 20px 40px', position: 'relative', zIndex: 10, fontFamily: '"Inter", "Poppins", system-ui, sans-serif' }}>
 
       <style>{`
         #features { scroll-margin-top: -60px; }
         .bento-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(3, 150px); gap: 16px; width: 100%; max-width: 1200px; }
-        .bento-large { grid-column: span 2; grid-row: span 2; } .bento-wide { grid-column: span 2; grid-row: span 1; } .bento-tall { grid-column: span 1; grid-row: span 2; } .bento-square { grid-column: span 1; grid-row: span 1; }
+        .bento-large { grid-column: span 2; grid-row: span 2; } 
+        .bento-wide { grid-column: span 2; grid-row: span 1; } 
+        .bento-tall { grid-column: span 1; grid-row: span 2; } 
+        .bento-square { grid-column: span 1; grid-row: span 1; }
+
+        .feature-link { height: 100%; width: 100%; box-sizing: border-box; text-decoration: none; display: block; }
+        
+        .card-inner { display: flex; flex-direction: column; height: 100%; justify-content: flex-start; overflow: hidden; box-sizing: border-box; }
+        .bento-large .card-inner { padding: 8px; }
+        .bento-wide .card-inner, .bento-tall .card-inner, .bento-square .card-inner { padding: 6px; }
+
+        .icon-wrapper { border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; flex-shrink: 0; }
+        .bento-large .icon-wrapper { width: 42px; height: 42px; }
+        .bento-wide .icon-wrapper, .bento-tall .icon-wrapper, .bento-square .icon-wrapper { width: 32px; height: 32px; }
+
+        .feature-title { color: white; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 4px; flex-shrink: 0; }
+        .bento-large .feature-title { font-size: 20px; }
+        .bento-wide .feature-title, .bento-tall .feature-title, .bento-square .feature-title { font-size: 15px; }
+
+        .feature-desc { color: #a1a1aa; line-height: 1.4; font-weight: 400; opacity: 0.9; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; margin: 0; flex-shrink: 0; }
+        .bento-large .feature-desc { font-size: 14px; -webkit-line-clamp: 4; }
+        .bento-wide .feature-desc, .bento-tall .feature-desc, .bento-square .feature-desc { font-size: 12px; -webkit-line-clamp: 2; }
 
         @media (max-width: 850px) {
           .bento-grid { grid-template-columns: 1fr; grid-template-rows: auto; max-width: 500px; }
@@ -32,10 +58,10 @@ const Features = () => {
 
       <div style={{ textAlign: 'center', marginBottom: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+          initial={motionInitial}
+          whileInView={motionWhileInView}
+          viewport={motionViewport}
+          transition={motionTransition}
           style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '8px', fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: '800', color: 'white', letterSpacing: '-0.02em', marginBottom: '6px' }}
         >
           <span>Powerful</span>
@@ -49,19 +75,22 @@ const Features = () => {
 
       <div className="bento-grid">
         {featuresData.map((feature, idx) => (
-          <Link key={idx} href={feature.link} className={feature.bentoClass} style={{ height: '100%', width: '100%', boxSizing: 'border-box', textDecoration: 'none' }}>
+          <Link key={idx} href={feature.link} className={`${feature.bentoClass} feature-link`}>
             <CardSpotlight color={feature.spotlight} glowColor={feature.color}>
-              <div style={{ padding: feature.bentoClass === 'bento-large' ? '8px' : '6px', display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'flex-start', overflow: 'hidden', boxSizing: 'border-box' }}>
+              <div className="card-inner">
 
-                <div style={{ width: feature.bentoClass === 'bento-large' ? '42px' : '32px', height: feature.bentoClass === 'bento-large' ? '42px' : '32px', borderRadius: '10px', backgroundColor: feature.color, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '8px', boxShadow: `0 4px 20px ${feature.color}50`, flexShrink: 0 }}>
+                <div 
+                  className="icon-wrapper" 
+                  style={{ backgroundColor: feature.color, boxShadow: `0 4px 20px ${feature.color}50` }}
+                >
                   {React.cloneElement(feature.icon, { size: feature.bentoClass === 'bento-large' ? 22 : 16 })}
                 </div>
 
-                <h3 style={{ color: 'white', fontSize: feature.bentoClass === 'bento-large' ? '20px' : '15px', fontWeight: '700', letterSpacing: '-0.02em', marginBottom: '4px', flexShrink: 0 }}>
+                <h3 className="feature-title">
                   {feature.title}
                 </h3>
 
-                <p style={{ color: '#a1a1aa', fontSize: feature.bentoClass === 'bento-large' ? '14px' : '12px', lineHeight: '1.4', fontWeight: '400', opacity: 0.9, display: '-webkit-box', WebkitLineClamp: feature.bentoClass === 'bento-large' ? 4 : 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', margin: 0, flexShrink: 0 }}>
+                <p className="feature-desc">
                   {feature.desc}
                 </p>
 
@@ -72,6 +101,6 @@ const Features = () => {
       </div>
     </div>
   );
-};
+});
 
 export default Features;

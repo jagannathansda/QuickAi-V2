@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, X } from 'lucide-react'; 
+import { Menu, X } from 'lucide-react';
 import { useClerk, UserButton, useUser } from '@clerk/nextjs';
-import { GlassSurface } from './ui/glass-surface';
+import { CardSpotlight } from './ui/card-spotlight';
 import { InteractiveHoverButton } from './ui/interactive-hover-button';
 import { usePathname } from 'next/navigation';
 
@@ -15,12 +15,11 @@ const Navbar = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     
     const pathname = usePathname();
-    const isToolPage = pathname !== '/';
     
-    // Instead of using State for hover styles, we'll manipulate the DOM directly.
-    // This stops React from constantly re-rendering the whole Navbar component.
-    const hoverBgRef = useRef(null);
+    const [hoverStyle, setHoverStyle] = useState({ opacity: 0, left: 0, width: 0 });
     const navRef = useRef(null);
+
+    const isToolPage = pathname !== '/';
     
     const navItems = isToolPage ? [
         { name: "Home", link: "/" },
@@ -34,21 +33,21 @@ const Navbar = () => {
         { name: "About", link: "/#footer" },
     ];
 
-    const handleMouseEnter = useCallback((e) => {
-        if (!navRef.current || !hoverBgRef.current) return;
+    const handleMouseEnter = (e) => {
+        if (!navRef.current) return;
         const rect = e.currentTarget.getBoundingClientRect();
         const parentRect = navRef.current.getBoundingClientRect();
         
-        hoverBgRef.current.style.opacity = '1';
-        hoverBgRef.current.style.left = `${rect.left - parentRect.left}px`;
-        hoverBgRef.current.style.width = `${rect.width}px`;
-    }, []);
+        setHoverStyle({
+          opacity: 1,
+          left: rect.left - parentRect.left,
+          width: rect.width,
+        });
+    };
 
-    const handleMouseLeave = useCallback(() => {
-        if (hoverBgRef.current) {
-            hoverBgRef.current.style.opacity = '0';
-        }
-    }, []);
+    const handleMouseLeave = () => {
+        setHoverStyle((prev) => ({ ...prev, opacity: 0 }));
+    };
 
     return (
         <>
@@ -69,6 +68,15 @@ const Navbar = () => {
                 z-index: 1;
             }
             .nav-link:hover { color: #ffffff; }
+
+            .blue-glass-nav {
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                transition: border-color 0.3s ease, box-shadow 0.3s ease !important;
+            }
+            .blue-glass-nav:hover {
+                border-color: rgba(59, 130, 246, 0.6) !important;
+                box-shadow: 0 0 15px rgba(59, 130, 246, 0.3) !important;
+            }
             
             @media (max-width: 768px) {
                 .desktop-nav { display: none !important; }
@@ -86,11 +94,23 @@ const Navbar = () => {
             height: '54px',
             zIndex: 50
         }}>
-            <GlassSurface width="100%" height="100%" borderRadius={40} blur={11} distortionScale={-180} backgroundOpacity={0}>
-                
-                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', height: '100%', padding: '0 18px' }}>
+            <CardSpotlight 
+                color="rgba(59, 130, 246, 0.25)"
+                className="blue-glass-nav"
+                style={{ 
+                    width: '100%', 
+                    height: '100%', 
+                    padding: 0, 
+                    borderRadius: '40px', 
+                    background: 'rgba(20, 20, 20, 0.175)',
+                    backdropFilter: 'blur(16px)',
+                    WebkitBackdropFilter: 'blur(16px)',
+                    overflow: 'hidden'
+                }}
+            >
+                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', height: '100%', padding: '0 20px', position: 'relative', zIndex: 10, boxSizing: 'border-box' }}>
                     
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', width: '130px', flexShrink: 0 }}>
                         <Link href="/">
                             <Image src="/assets/logo.svg" alt="QuickAI logo" width={120} height={28} priority />
                         </Link>
@@ -102,22 +122,7 @@ const Navbar = () => {
                         onMouseLeave={handleMouseLeave}
                         style={{ position: 'relative', flexDirection: 'row', alignItems: 'center', gap: '4px' }}
                     >
-                        {/* DOM Manipulation Target */}
-                        <div 
-                            ref={hoverBgRef}
-                            style={{ 
-                                position: 'absolute', 
-                                top: 0, 
-                                bottom: 0, 
-                                left: 0, 
-                                width: 0, 
-                                opacity: 0, 
-                                backgroundColor: 'rgba(255, 255, 255, 0.12)', 
-                                borderRadius: '50px', 
-                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
-                                zIndex: 0 
-                            }} 
-                        />
+                        <div style={{ position: 'absolute', top: 0, bottom: 0, left: hoverStyle.left, width: hoverStyle.width, opacity: hoverStyle.opacity, backgroundColor: 'rgba(255, 255, 255, 0.12)', borderRadius: '50px', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', zIndex: 0 }} />
 
                         {navItems.map((item, idx) => (
                             <Link key={idx} href={item.link} className="nav-link" onMouseEnter={handleMouseEnter}>
@@ -126,32 +131,33 @@ const Navbar = () => {
                         ))}
                     </div>
 
-                    <div className="desktop-nav" style={{ alignItems: 'center' }}>
-                        {user ? (
-                            <UserButton afterSignOutUrl="/" />
-                        ) : (
-                            <InteractiveHoverButton onClick={openSignIn}>Sign in</InteractiveHoverButton>
-                        )}
-                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', width: '130px', flexShrink: 0 }}>
+                        <div className="desktop-nav" style={{ alignItems: 'center', width: '100%', justifyContent: 'flex-end' }}>
+                            {user ? (
+                                <UserButton afterSignOutUrl="/" />
+                            ) : (
+                                <InteractiveHoverButton onClick={openSignIn}>Sign in</InteractiveHoverButton>
+                            )}
+                        </div>
 
-                    <div className="mobile-nav" style={{ alignItems: 'center' }}>
-                        <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}>
-                            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                        </button>
+                        <div className="mobile-nav" style={{ alignItems: 'center', justifyContent: 'flex-end', width: '100%' }}>
+                            <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                            </button>
+                        </div>
                     </div>
 
                 </div>
-            </GlassSurface>
+            </CardSpotlight>
             
-            {/* Mobile Menu Dropdown */}
             {isMobileMenuOpen && (
-                <div style={{ position: 'absolute', top: '70px', left: 0, right: 0, backgroundColor: 'rgba(15, 15, 15, 0.95)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: '20px', padding: '16px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <div style={{ position: 'absolute', top: '70px', left: 0, right: 0, backgroundColor: 'rgba(20, 20, 20, 0.8)', backdropFilter: 'blur(16px)', borderRadius: '20px', padding: '16px', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
                     {navItems.map((item, idx) => (
                         <Link key={idx} href={item.link} style={{ display: 'block', padding: '12px 16px', color: 'white', textDecoration: 'none', fontWeight: 600, borderBottom: idx !== navItems.length - 1 ? '1px solid rgba(255,255,255,0.1)' : 'none' }}>
                             {item.name}
                         </Link>
                     ))}
-                    <div style={{ marginTop: '16px', padding: '0 16px' }}>
+                    <div style={{ marginTop: '16px', padding: '0 16px', display: 'flex', justifyContent: 'center' }}>
                         {user ? (
                             <UserButton afterSignOutUrl="/" />
                         ) : (
