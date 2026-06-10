@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useId } from 'react';
+import React, { useEffect, useRef, useId, useState } from 'react';
 
 export const GlassSurface = ({
   children,
@@ -35,6 +35,12 @@ export const GlassSurface = ({
   const blueChannelRef = useRef(null);
   const gaussianBlurRef = useRef(null);
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    setIsMobile(window.innerWidth <= 1024);
+  }, []);
+
   const generateDisplacementMap = () => {
     if (!containerRef.current) return '';
     const rect = containerRef.current.getBoundingClientRect();
@@ -64,6 +70,7 @@ export const GlassSurface = ({
   };
 
   const updateDisplacementMap = () => {
+    if (isMobile) return;
     if (feImageRef.current) {
       const dataUrl = generateDisplacementMap();
       feImageRef.current.setAttribute('href', dataUrl);
@@ -71,6 +78,7 @@ export const GlassSurface = ({
   };
 
   useEffect(() => {
+    if (isMobile) return;
     updateDisplacementMap();
     [
       { ref: redChannelRef, offset: redOffset },
@@ -86,10 +94,10 @@ export const GlassSurface = ({
     if (gaussianBlurRef.current) {
       gaussianBlurRef.current.setAttribute('stdDeviation', displace.toString());
     }
-  }, [width, height, borderRadius, borderWidth, brightness, opacity, blur, displace, distortionScale, redOffset, greenOffset, blueOffset, xChannel, yChannel, mixBlendMode]);
+  }, [width, height, borderRadius, borderWidth, brightness, opacity, blur, displace, distortionScale, redOffset, greenOffset, blueOffset, xChannel, yChannel, mixBlendMode, isMobile]);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || isMobile) return;
     let rafId;
     const resizeObserver = new ResizeObserver(() => { 
         cancelAnimationFrame(rafId);
@@ -100,7 +108,7 @@ export const GlassSurface = ({
         resizeObserver.disconnect();
         cancelAnimationFrame(rafId);
     };
-  }, []);
+  }, [isMobile]);
 
   return (
     <div
@@ -126,7 +134,7 @@ export const GlassSurface = ({
              backdrop-filter: blur(${blur}px) saturate(${saturation});
             -webkit-backdrop-filter: blur(${blur}px) saturate(${saturation});
         }
-        @media (min-width: 769px) {
+        @media (min-width: 1025px) {
             .glass-surface-wrapper {
                  backdrop-filter: url(#${filterId}) saturate(${saturation}) !important;
                 -webkit-backdrop-filter: url(#${filterId}) saturate(${saturation}) !important;
@@ -134,25 +142,27 @@ export const GlassSurface = ({
         }
       `}</style>
 
-      <svg 
-        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, pointerEvents: 'none', zIndex: -10 }} 
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <defs>
-          <filter id={filterId} colorInterpolationFilters="sRGB" x="-20%" y="-20%" width="140%" height="140%">
-            <feImage ref={feImageRef} x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="map" />
-            <feDisplacementMap ref={redChannelRef} in="SourceGraphic" in2="map" result="dispRed" />
-            <feColorMatrix in="dispRed" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="red" />
-            <feDisplacementMap ref={greenChannelRef} in="SourceGraphic" in2="map" result="dispGreen" />
-            <feColorMatrix in="dispGreen" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="green" />
-            <feDisplacementMap ref={blueChannelRef} in="SourceGraphic" in2="map" result="dispBlue" />
-            <feColorMatrix in="dispBlue" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="blue" />
-            <feBlend in="red" in2="green" mode="screen" result="rg" />
-            <feBlend in="rg" in2="blue" mode="screen" result="output" />
-            <feGaussianBlur ref={gaussianBlurRef} in="output" stdDeviation="0.7" />
-          </filter>
-        </defs>
-      </svg>
+      {!isMobile && (
+        <svg 
+          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, pointerEvents: 'none', zIndex: -10 }} 
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <defs>
+            <filter id={filterId} colorInterpolationFilters="sRGB" x="-20%" y="-20%" width="140%" height="140%">
+              <feImage ref={feImageRef} x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="map" />
+              <feDisplacementMap ref={redChannelRef} in="SourceGraphic" in2="map" result="dispRed" />
+              <feColorMatrix in="dispRed" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="red" />
+              <feDisplacementMap ref={greenChannelRef} in="SourceGraphic" in2="map" result="dispGreen" />
+              <feColorMatrix in="dispGreen" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="green" />
+              <feDisplacementMap ref={blueChannelRef} in="SourceGraphic" in2="map" result="dispBlue" />
+              <feColorMatrix in="dispBlue" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="blue" />
+              <feBlend in="red" in2="green" mode="screen" result="rg" />
+              <feBlend in="rg" in2="blue" mode="screen" result="output" />
+              <feGaussianBlur ref={gaussianBlurRef} in="output" stdDeviation="0.7" />
+            </filter>
+          </defs>
+        </svg>
+      )}
 
       <div style={{ position: 'relative', zIndex: 10, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {children}

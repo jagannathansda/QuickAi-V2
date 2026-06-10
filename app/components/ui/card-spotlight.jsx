@@ -22,7 +22,7 @@ export const CardSpotlight = ({
   return (
     <>
       <style>{`
-        @media (hover: none) and (pointer: coarse), (max-width: 768px) {
+        @media (hover: none) and (pointer: coarse), (max-width: 1024px) {
           .spotlight-layer { 
             display: none !important; 
           }

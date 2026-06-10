@@ -75,7 +75,7 @@ const Pricing = () => {
             will-change: backdrop-filter, box-shadow;
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
             .cl-pricingTableCard, .cl-modalContent {
                 backdrop-filter: blur(8px) !important;
                 -webkit-backdrop-filter: blur(8px) !important;

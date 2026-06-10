@@ -124,7 +124,7 @@ export default function Orb() {
 
     function resize() {
       if (!container) return;
-      const isMobile = window.innerWidth <= 768;
+      const isMobile = window.innerWidth <= 1024;
       const dpr = isMobile ? 1 : Math.min(window.devicePixelRatio || 1, 2);
       const width = container.clientWidth;
       const height = container.clientHeight;
