@@ -40,7 +40,6 @@ export default function CommunityPage() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      // Update local state for UI
       setPosts(prev => prev.map(post => {
         if (post.id === id) {
           const isLiked = post.likes.includes(userId);
@@ -73,60 +72,64 @@ export default function CommunityPage() {
 
       <style>{`
         * { box-sizing: border-box; }
-        .community-wrapper
-        { width: 100%;
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 60px 20px 40px;
-          display: flex;
-          flex-direction: column; 
-         }
-        .uniform-grid 
-        { display: grid; 
-         grid-template-columns: repeat(4, 1fr); 
-         gap: 20px; 
-         width: 100%; 
+        .community-wrapper { 
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 20px 40px;
+            display: flex;
+            flex-direction: column; 
         }
-        .glass-card 
-        { background-color: rgba(15, 15, 15, 0.4); 
-         backdrop-filter: blur(16px); 
-         border: 1px solid rgba(255, 255, 255, 0.08); 
-         border-radius: 20px; 
-         padding: 4px !important; 
-         transition: transform 0.3s ease; 
-         height: 100%; 
+        .uniform-grid { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 20px; 
+            width: 100%; 
         }
-        .glass-card:hover 
-        { transform: translateY(-6px); 
-         border-color: rgba(6, 182, 212, 0.5); 
+        .glass-card { 
+            background-color: rgba(15, 15, 15, 0.4); 
+            backdrop-filter: blur(16px); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            border-radius: 20px; 
+            padding: 6px !important; 
+            transition: transform 0.3s ease; 
+            height: 100%;
+            display: flex;
+            flex-direction: column;
         }
-        .image-container 
-        { width: 100%; 
-         aspect-ratio: 3 / 4; 
-         position: relative; 
-         overflow: hidden; 
-         border-radius: 16px; 
+        .glass-card:hover { 
+            transform: translateY(-6px); 
+            border-color: rgba(6, 182, 212, 0.5); 
         }
-        .image-container img 
-        { width: 100%; 
-         height: 100%; 
-         object-fit: cover; }
-        .card-overlay 
-        { position: absolute; 
-         bottom: 0; 
-         left: 0; 
-         width: 100%; 
-         padding: 40px 14px 14px; 
-         background: linear-gradient(to top, rgba(0,0,0,0.95), transparent); 
+        .image-container { 
+            width: 100%; 
+            aspect-ratio: 3 / 4; 
+            position: relative; 
+            overflow: hidden; 
+            border-radius: 14px; 
         }
-        .prompt-text 
-        { color: #f3f4f6; 
-         font-size: 13px; 
-         margin: 0 0 10px 0; 
-         -webkit-line-clamp: 2; 
-         display: -webkit-box; 
-         -webkit-box-orient: vertical; 
-         overflow: hidden; 
+        .image-container img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            border-radius: inherit;
+        }
+        .card-overlay { 
+            position: absolute; 
+            bottom: 0; 
+            left: 0; 
+            width: 100%; 
+            padding: 40px 14px 14px; 
+            background: linear-gradient(to top, rgba(0,0,0,0.95), transparent); 
+        }
+        .prompt-text { 
+            color: #f3f4f6; 
+            font-size: 13px; 
+            margin: 0 0 10px 0; 
+            -webkit-line-clamp: 2; 
+            display: -webkit-box; 
+            -webkit-box-orient: vertical; 
+            overflow: hidden; 
         }
         @media (max-width: 1024px) { .uniform-grid { grid-template-columns: repeat(3, 1fr); } }
         @media (max-width: 768px) { .uniform-grid { grid-template-columns: repeat(2, 1fr); } }
@@ -141,6 +144,9 @@ export default function CommunityPage() {
         <div className="uniform-grid">
           {posts.map((post, index) => {
             const isLiked = post.likes.includes(userId);
+            const displayName = post.username || 'Creator';
+            const truncatedName = displayName.length > 10 ? displayName.slice(0, 10) + '...' : displayName;
+
             return (
               <motion.div key={post.id} initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
                 <CardSpotlight color="rgba(6, 182, 212, 0.1)" glowColor="#06b6d4" className="glass-card">
@@ -149,7 +155,11 @@ export default function CommunityPage() {
                     <div className="card-overlay">
                       <p className="prompt-text">"{post.prompt}"</p>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ color: '#06b6d4', fontSize: '12px', fontWeight: '700' }}>User ID: {post.user_id.slice(-6)}</span>
+                        
+                        <span style={{ color: '#06b6d4', fontSize: '13px', fontWeight: '700' }}>
+                          @{truncatedName}
+                        </span>
+
                         <button 
                           onClick={() => toggleLike(post.id)}
                           style={{ 
