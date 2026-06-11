@@ -106,7 +106,7 @@ export default function CommunityPage() {
             aspect-ratio: 3 / 4; 
             position: relative; 
             overflow: hidden; 
-            border-radius: 14px; 
+            border-radius: 17px; 
         }
         .image-container img { 
             width: 100%; 
@@ -144,8 +144,7 @@ export default function CommunityPage() {
         <div className="uniform-grid">
           {posts.map((post, index) => {
             const isLiked = post.likes.includes(userId);
-            const displayName = post.username || 'Creator';
-            const truncatedName = displayName.length > 10 ? displayName.slice(0, 10) + '...' : displayName;
+            const displayId = post.user_id ? post.user_id.slice(-6) : 'Unknown';
 
             return (
               <motion.div key={post.id} initial={{ opacity: 0, y: 15 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
@@ -157,7 +156,7 @@ export default function CommunityPage() {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         
                         <span style={{ color: '#06b6d4', fontSize: '13px', fontWeight: '700' }}>
-                          @{truncatedName}
+                          User ID: {displayId}
                         </span>
 
                         <button 
